@@ -1,0 +1,56 @@
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+# Crear datos normales
+normal_data = np.random.normal(50, 5, 100)
+
+# Agregar anomalías
+anomalies = np.array([80, 85, 90, 20, 15])
+
+# Combinar datos
+data = np.concatenate([normal_data, anomalies])
+
+# Crear DataFrame
+df = pd.DataFrame(data, columns=["value"])
+
+# Modelo de detección de anomalías
+model = IsolationForest(contamination=0.05, random_state=42)
+
+# Entrenar modelo
+model.fit(df[["value"]])
+
+# Detectar anomalías
+df["anomaly"] = model.predict(df[["value"]])
+
+# Mostrar anomalías detectadas
+print("Anomalías detectadas:\n")
+print(df[df["anomaly"] == -1])
+
+# Create a 3D scatter plot
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+# Separate normal and anomalous points for coloring
+normal_points = df[df['anomaly'] == 1]
+anomaly_points = df[df['anomaly'] == -1]
+
+# Plot normal points
+ax.scatter(normal_points.index, normal_points['value'], normal_points['anomaly'], 
+           c='blue', label='Normal', s=50)
+
+# Plot anomalous points
+ax.scatter(anomaly_points.index, anomaly_points['value'], anomaly_points['anomaly'], 
+           c='red', label='Anomalía', s=50)
+
+
+ax.set_xlabel('Índice del Punto')
+ax.set_ylabel('Valor')
+ax.set_zlabel('Anomalía (-1 = Anomalía, 1 = Normal)')
+ax.set_title('Detección de Anomalías en 3D')
+ax.legend()
+
+plt.tight_layout()
+plt.show()
